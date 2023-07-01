@@ -483,7 +483,9 @@ class CopyPaste extends BasePlugin {
     let pastedData;
 
     if (event && typeof event.clipboardData !== 'undefined') {
-      const textHTML = event.clipboardData.getData('text/html');
+      // disable HTML paste as it causes more problem than benefit
+      // const textHTML = event.clipboardData.getData('text/html');
+      const textHTML = event.clipboardData.getData('text/plain');
 
       if (textHTML && /(<table)|(<TABLE)/.test(textHTML)) {
         pastedData = tableToArray(textHTML);

@@ -9,11 +9,13 @@ module.exports = {
     "es6": true,
   },
   "rules": {
+    'linebreak-style': ['error', process.platform === 'win32' ? 'windows' : 'unix'],
     "arrow-parens": [
       "error",
       "as-needed",
       { "requireForBlockBody": true }
     ],
+    "prefer-arrow-callback" : "off",
     "class-methods-use-this": "off",
     "comma-dangle": "off",
     "consistent-return": "off",
@@ -55,12 +57,7 @@ module.exports = {
       { "allowForLoopAfterthoughts": true }
     ],
     "no-restricted-globals": [
-      "error",
-      "Handsontable",
-      {
-        "name": "console",
-        "message": "Using the `console` object is not allowed within Handsontable. Please use one of the helpers from the `console.js` file instead."
-      }
+      "error"
     ],
     "no-underscore-dangle": "off",
     "no-use-before-define": [

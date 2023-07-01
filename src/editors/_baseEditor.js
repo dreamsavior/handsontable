@@ -168,9 +168,12 @@ BaseEditor.prototype.finishEditing = function(restoreOriginalValue, ctrlDown, ca
 
     if (this.instance.getSettings().trimWhitespace) {
       // We trim only string values
-      val = [
-        [typeof value === 'string' ? String.prototype.trim.call(value || '') : value]
-      ];
+      // val = [
+      //   [typeof value === 'string' ? String.prototype.trim.call(value || '') : value]
+      // ];
+
+      // DV:disable trimWhitespace option altogether
+      val = [[value]];
     } else {
       val = [
         [value]

@@ -24,7 +24,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  * Version: 6.2.2
- * Release date: 19/12/2018 (built at 01/07/2023 07:34:23)
+ * Release date: 19/12/2018 (built at 01/07/2023 08:37:09)
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -8734,7 +8734,11 @@ BaseEditor.prototype.finishEditing = function (restoreOriginalValue, ctrlDown, c
 
     if (this.instance.getSettings().trimWhitespace) {
       // We trim only string values
-      val = [[typeof value === 'string' ? String.prototype.trim.call(value || '') : value]];
+      // val = [
+      //   [typeof value === 'string' ? String.prototype.trim.call(value || '') : value]
+      // ];
+      // DV:disable trimWhitespace option altogether
+      val = [[value]];
     } else {
       val = [[value]];
     }
@@ -15581,14 +15585,11 @@ function isPressed(keyCodes) {
  *
  * @return {Boolean}
  */
+// function isPressedCtrlKey() {
+//   const values = Array.from(pressedKeys.values());
+//   return values.some(_keyCode => isCtrlMetaKey(_keyCode));
+// }
 
-
-function isPressedCtrlKey() {
-  var values = Array.from(pressedKeys.values());
-  return values.some(function (_keyCode) {
-    return (0, _unicode.isCtrlMetaKey)(_keyCode);
-  });
-}
 /**
  * Returns reference count. Useful for debugging and testing purposes.
  *
@@ -15598,7 +15599,50 @@ function isPressedCtrlKey() {
 
 function _getRefCount() {
   return refCount;
+} // dreamsavior edit ==================
+
+
+var $ = window.$;
+var HOTdv = {
+  patchLog: 'Fixing paste to text mode'
+};
+$(window).on('blur.HOT', function () {
+  HOTdv.resetCtrlKey = true;
+  $(document).off('keydown.HOT');
+  $(document).on('keydown.HOT', function (e) {
+    if (e.ctrlKey) {
+      HOTdv.resetCtrlKey = false;
+      $(document).off('keydown.HOT');
+    }
+  });
+});
+/*
+$(window).on("focus.HOT", function() {
+  HOTdv.windowHasLostFocus = false;
+});
+*/
+
+/**
+ * Checks if ctrl keys are pressed.
+ *
+ * @return {Boolean}
+ */
+
+function isPressedCtrlKey() {
+  if (HOTdv.resetCtrlKey) {
+    return false;
+  }
+
+  var values = Array.from(pressedKeys.values());
+  return values.some(function (_keyCode) {
+    return (0, _unicode.isCtrlMetaKey)(_keyCode);
+  }) && values.every(function (_keyCode) {
+    return !(0, _unicode.isPrintableChar)(_keyCode);
+  });
 }
+
+HOTdv.isPressedCtrlKey = isPressedCtrlKey; // HOTdv._unicode = _unicode;
+// end of dreamsavior edit =============
 
 /***/ }),
 /* 124 */
@@ -29734,7 +29778,7 @@ Handsontable.DefaultSettings = _defaultSettings.default;
 Handsontable.EventManager = _eventManager.default;
 Handsontable._getListenersCounter = _eventManager.getListenersCounter; // For MemoryLeak tests
 
-Handsontable.buildDate = "01/07/2023 07:34:23";
+Handsontable.buildDate = "01/07/2023 08:37:09";
 Handsontable.packageName = "handsontable";
 Handsontable.version = "6.2.2";
 var baseVersion = "";
@@ -39782,6 +39826,13 @@ function EditorManager(instance, priv, selection) {
         break;
 
       case _unicode.KEY_CODES.ARROW_UP:
+        // Dreamsavior edit
+        if (event.altKey) {
+          console.log('alt+arrowUp');
+          break;
+        } // end of Dreamsavior
+
+
         if (_this.isEditorOpened() && !activeEditor.isWaiting()) {
           _this.closeEditorAndSaveChanges(ctrlDown);
         }
@@ -39792,6 +39843,13 @@ function EditorManager(instance, priv, selection) {
         break;
 
       case _unicode.KEY_CODES.ARROW_DOWN:
+        // Dreamsavior edit
+        if (event.altKey) {
+          console.log('alt+arrowDown');
+          break;
+        } // end of Dreamsavior
+
+
         if (_this.isEditorOpened() && !activeEditor.isWaiting()) {
           _this.closeEditorAndSaveChanges(ctrlDown);
         }
@@ -52096,7 +52154,9 @@ function (_BasePlugin) {
       var pastedData;
 
       if (event && typeof event.clipboardData !== 'undefined') {
-        var textHTML = event.clipboardData.getData('text/html');
+        // disable HTML paste as it causes more problem than benefit
+        // const textHTML = event.clipboardData.getData('text/html');
+        var textHTML = event.clipboardData.getData('text/plain');
 
         if (textHTML && /(<table)|(<TABLE)/.test(textHTML)) {
           pastedData = (0, _utils.tableToArray)(textHTML);

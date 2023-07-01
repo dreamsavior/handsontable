@@ -100,6 +100,12 @@ function EditorManager(instance, priv, selection) {
         break;
 
       case KEY_CODES.ARROW_UP:
+        // Dreamsavior edit
+        if (event.altKey) {
+          console.log('alt+arrowUp');
+          break;
+        }
+        // end of Dreamsavior
         if (_this.isEditorOpened() && !activeEditor.isWaiting()) {
           _this.closeEditorAndSaveChanges(ctrlDown);
         }
@@ -110,6 +116,12 @@ function EditorManager(instance, priv, selection) {
         break;
 
       case KEY_CODES.ARROW_DOWN:
+        // Dreamsavior edit
+        if (event.altKey) {
+          console.log('alt+arrowDown');
+          break;
+        }
+        // end of Dreamsavior
         if (_this.isEditorOpened() && !activeEditor.isWaiting()) {
           _this.closeEditorAndSaveChanges(ctrlDown);
         }

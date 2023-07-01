@@ -1,5 +1,5 @@
 import EventManager from '../eventManager';
-import { isCtrlMetaKey, isKey } from '../helpers/unicode';
+import { isCtrlMetaKey, isKey, isPrintableChar } from '../helpers/unicode';
 
 const eventManager = new EventManager();
 const pressedKeys = new Set();
@@ -70,11 +70,11 @@ function isPressed(keyCodes) {
  *
  * @return {Boolean}
  */
-function isPressedCtrlKey() {
-  const values = Array.from(pressedKeys.values());
+// function isPressedCtrlKey() {
+//   const values = Array.from(pressedKeys.values());
 
-  return values.some(_keyCode => isCtrlMetaKey(_keyCode));
-}
+//   return values.some(_keyCode => isCtrlMetaKey(_keyCode));
+// }
 
 /**
  * Returns reference count. Useful for debugging and testing purposes.
@@ -84,6 +84,49 @@ function isPressedCtrlKey() {
 function _getRefCount() {
   return refCount;
 }
+
+// dreamsavior edit ==================
+const $ = window.$;
+const HOTdv = {
+  patchLog: 'Fixing paste to text mode'
+};
+
+$(window).on('blur.HOT', () => {
+  HOTdv.resetCtrlKey = true;
+  $(document).off('keydown.HOT');
+  $(document).on('keydown.HOT', (e) => {
+    if (e.ctrlKey) {
+      HOTdv.resetCtrlKey = false;
+      $(document).off('keydown.HOT');
+    }
+  });
+});
+/*
+$(window).on("focus.HOT", function() {
+  HOTdv.windowHasLostFocus = false;
+});
+*/
+
+/**
+ * Checks if ctrl keys are pressed.
+ *
+ * @return {Boolean}
+ */
+function isPressedCtrlKey() {
+  if (HOTdv.resetCtrlKey) {
+    return false;
+  }
+  const values = Array.from(pressedKeys.values());
+
+  return values.some(function(_keyCode) {
+    return (0, isCtrlMetaKey)(_keyCode);
+  }) && values.every(function(_keyCode) {
+    return !(0, isPrintableChar)(_keyCode);
+  });
+}
+HOTdv.isPressedCtrlKey = isPressedCtrlKey;
+// HOTdv._unicode = _unicode;
+// end of dreamsavior edit =============
 
 export {
   _getRefCount,
