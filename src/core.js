@@ -1610,6 +1610,7 @@ export default function Core(rootElement, userSettings, rootInstanceSymbol = fal
    * });
    * ```
    * @fires Hooks#afterCellMetaReset
+   * @fires Hooks#updatePlugin
    * @fires Hooks#afterUpdateSettings
    */
   this.updateSettings = function(settings, init = false) {

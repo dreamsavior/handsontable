@@ -405,6 +405,8 @@ class ManualColumnMove extends BasePlugin {
     } else if (scrollableElement.scrollX !== void 0 && priv.coordsColumn < priv.fixedColumns) {
       guidelineLeft -= ((priv.rootElementOffset <= scrollableElement.scrollX) ? priv.rootElementOffset : 0);
     }
+    // dreamsavior patch, add Left ofset to the guideline
+    guidelineLeft += this.hot.view.THEAD.querySelector('tr > th').offsetWidth;
 
     this.backlight.setPosition(null, backlightLeft);
     this.guideline.setPosition(null, guidelineLeft);

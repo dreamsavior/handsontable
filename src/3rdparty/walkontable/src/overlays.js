@@ -515,7 +515,20 @@ class Overlays {
    *
    * @param {Boolean} [force=false]
    */
-  adjustElementsSize(force = false) {
+  async adjustElementsSize(force = false) {
+    if (Handsontable?.debugLevel) console.log("%c Running adjustElementsSize", "color:aqua", this, arguments);
+    if (this.wot.ignoreAdjustElementSize) return;
+    var cachedResult;
+
+    if (typeof this.wot.beforeAdjustElementsSize === "function") {
+      cachedResult = await this.wot.beforeAdjustElementsSize.apply(this, Array.from(arguments));
+    }
+
+    if (typeof this.wot.getCachedDimension === "function") {
+      cachedResult = await this.wot.getCachedDimension();
+      console.log("CachedResult", cachedResult);
+    }
+    
     const totalColumns = this.wot.getSetting('totalColumns');
     const totalRows = this.wot.getSetting('totalRows');
     const headerRowSize = this.wot.wtViewport.getRowHeaderWidth();
@@ -531,6 +544,40 @@ class Overlays {
     if (this.bottomOverlay.clone) {
       this.bottomOverlay.adjustElementsSize(force);
     }
+
+    if (typeof this.wot.afterAdjustElementsSize == "function") {
+      this.wot.afterAdjustElementsSize.apply(this, Array.from(arguments))
+    }
+  }
+
+  /**
+   * Force the size of the grid to certain px
+   * @param {*} height 
+   * @param {*} width 
+   * @author Dreamsavior
+   */
+  async setElementSize(height=0, width=0) {
+    const headerRowSize = this.wot.wtViewport.getRowHeaderWidth();
+    const headerColumnSize = this.wot.wtViewport.getColumnHeaderHeight();
+    const hiderStyle = this.wot.wtTable.hider.style;
+
+    if (!height) {
+      const totalRows = this.wot.getSetting('totalRows');
+      height = this.topOverlay.sumCellSizes(0, totalRows)
+    }
+    if (!width) {
+      const totalColumns = this.wot.getSetting('totalColumns');
+      width = this.leftOverlay.sumCellSizes(0, totalColumns);
+    }
+    hiderStyle.width = `${headerRowSize + width}px`;
+    hiderStyle.height = `${headerColumnSize + height + 1}px`;
+
+    // this.topOverlay.setElementSize(height, width);
+    // this.leftOverlay.setElementSize(height, width);
+
+    // if (this.bottomOverlay.clone) {
+    //   this.bottomOverlay.setElementSize(height, width);
+    // }
   }
 
   /**

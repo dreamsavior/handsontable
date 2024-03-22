@@ -24,7 +24,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  * Version: 6.2.2
- * Release date: 19/12/2018 (built at 01/07/2023 08:37:09)
+ * Release date: 19/12/2018 (built at 22/03/2024 15:02:41)
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -17674,6 +17674,7 @@ function Core(rootElement, userSettings) {
    * });
    * ```
    * @fires Hooks#afterCellMetaReset
+   * @fires Hooks#updatePlugin
    * @fires Hooks#afterUpdateSettings
    */
 
@@ -36381,6 +36382,10 @@ var _base = _interopRequireDefault(__webpack_require__(44));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -36940,22 +36945,90 @@ function () {
 
   }, {
     key: "adjustElementsSize",
-    value: function adjustElementsSize() {
-      var force = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-      var totalColumns = this.wot.getSetting('totalColumns');
-      var totalRows = this.wot.getSetting('totalRows');
-      var headerRowSize = this.wot.wtViewport.getRowHeaderWidth();
-      var headerColumnSize = this.wot.wtViewport.getColumnHeaderHeight();
-      var hiderStyle = this.wot.wtTable.hider.style;
-      hiderStyle.width = "".concat(headerRowSize + this.leftOverlay.sumCellSizes(0, totalColumns), "px");
-      hiderStyle.height = "".concat(headerColumnSize + this.topOverlay.sumCellSizes(0, totalRows) + 1, "px");
-      this.topOverlay.adjustElementsSize(force);
-      this.leftOverlay.adjustElementsSize(force);
+    value: function () {
+      var _adjustElementsSize = _asyncToGenerator(function* () {
+        var _Handsontable;
 
-      if (this.bottomOverlay.clone) {
-        this.bottomOverlay.adjustElementsSize(force);
+        var force = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+        if ((_Handsontable = Handsontable) !== null && _Handsontable !== void 0 && _Handsontable.debugLevel) console.log("%c Running adjustElementsSize", "color:aqua", this, arguments);
+        if (this.wot.ignoreAdjustElementSize) return;
+        var cachedResult;
+
+        if (typeof this.wot.beforeAdjustElementsSize === "function") {
+          cachedResult = yield this.wot.beforeAdjustElementsSize.apply(this, Array.from(arguments));
+        }
+
+        if (typeof this.wot.getCachedDimension === "function") {
+          cachedResult = yield this.wot.getCachedDimension();
+          console.log("CachedResult", cachedResult);
+        }
+
+        var totalColumns = this.wot.getSetting('totalColumns');
+        var totalRows = this.wot.getSetting('totalRows');
+        var headerRowSize = this.wot.wtViewport.getRowHeaderWidth();
+        var headerColumnSize = this.wot.wtViewport.getColumnHeaderHeight();
+        var hiderStyle = this.wot.wtTable.hider.style;
+        hiderStyle.width = "".concat(headerRowSize + this.leftOverlay.sumCellSizes(0, totalColumns), "px");
+        hiderStyle.height = "".concat(headerColumnSize + this.topOverlay.sumCellSizes(0, totalRows) + 1, "px");
+        this.topOverlay.adjustElementsSize(force);
+        this.leftOverlay.adjustElementsSize(force);
+
+        if (this.bottomOverlay.clone) {
+          this.bottomOverlay.adjustElementsSize(force);
+        }
+
+        if (typeof this.wot.afterAdjustElementsSize == "function") {
+          this.wot.afterAdjustElementsSize.apply(this, Array.from(arguments));
+        }
+      });
+
+      function adjustElementsSize() {
+        return _adjustElementsSize.apply(this, arguments);
       }
-    }
+
+      return adjustElementsSize;
+    }()
+    /**
+     * Force the size of the grid to certain px
+     * @param {*} height 
+     * @param {*} width 
+     * @author Dreamsavior
+     */
+
+  }, {
+    key: "setElementSize",
+    value: function () {
+      var _setElementSize = _asyncToGenerator(function* () {
+        var height = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+        var width = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+        var headerRowSize = this.wot.wtViewport.getRowHeaderWidth();
+        var headerColumnSize = this.wot.wtViewport.getColumnHeaderHeight();
+        var hiderStyle = this.wot.wtTable.hider.style;
+
+        if (!height) {
+          var totalRows = this.wot.getSetting('totalRows');
+          height = this.topOverlay.sumCellSizes(0, totalRows);
+        }
+
+        if (!width) {
+          var totalColumns = this.wot.getSetting('totalColumns');
+          width = this.leftOverlay.sumCellSizes(0, totalColumns);
+        }
+
+        hiderStyle.width = "".concat(headerRowSize + width, "px");
+        hiderStyle.height = "".concat(headerColumnSize + height + 1, "px"); // this.topOverlay.setElementSize(height, width);
+        // this.leftOverlay.setElementSize(height, width);
+        // if (this.bottomOverlay.clone) {
+        //   this.bottomOverlay.setElementSize(height, width);
+        // }
+      });
+
+      function setElementSize() {
+        return _setElementSize.apply(this, arguments);
+      }
+
+      return setElementSize;
+    }()
     /**
      *
      */
@@ -45989,7 +46062,7 @@ Handsontable.DefaultSettings = _defaultSettings.default;
 Handsontable.EventManager = _eventManager.default;
 Handsontable._getListenersCounter = _eventManager.getListenersCounter; // For MemoryLeak tests
 
-Handsontable.buildDate = "01/07/2023 08:37:09";
+Handsontable.buildDate = "22/03/2024 15:02:41";
 Handsontable.packageName = "handsontable";
 Handsontable.version = "6.2.2";
 var baseVersion = "";
@@ -51100,6 +51173,7 @@ function (_Overlay) {
     key: "adjustElementsSize",
     value: function adjustElementsSize() {
       var force = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+      if (this.instance.ignoreAdjustElementSize) return;
       this.updateTrimmingContainer();
 
       if (this.needFullRender || force) {
@@ -51472,6 +51546,7 @@ function (_Overlay) {
     key: "adjustElementsSize",
     value: function adjustElementsSize() {
       var force = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+      if (this.instance.ignoreAdjustElementSize) return;
       this.updateTrimmingContainer();
 
       if (this.needFullRender || force) {
@@ -52023,7 +52098,11 @@ function (_Overlay) {
   }, {
     key: "adjustElementsSize",
     value: function adjustElementsSize() {
+      var _Handsontable;
+
       var force = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+      if ((_Handsontable = Handsontable) !== null && _Handsontable !== void 0 && _Handsontable.debugLevel) console.warn("%c Running adjustElementsSize - BottomOverlay", "color:aqua", this, arguments);
+      if (this.instance.ignoreAdjustElementSize) return;
       this.updateTrimmingContainer();
 
       if (this.needFullRender || force) {
@@ -61186,14 +61265,7 @@ function (_BasePlugin) {
           timer = (0, _feature.requestAnimationFrame)(loop);
         } else {
           (0, _feature.cancelAnimationFrame)(timer);
-          _this4.inProgress = false; // @TODO Should call once per render cycle, currently fired separately in different plugins
-
-          _this4.hot.view.wt.wtOverlays.adjustElementsSize(true); // tmp
-
-
-          if (_this4.hot.view.wt.wtOverlays.leftOverlay.needFullRender) {
-            _this4.hot.view.wt.wtOverlays.leftOverlay.clone.draw();
-          }
+          _this4.inProgress = false;
         }
       };
 
@@ -62393,6 +62465,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
 
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
@@ -62684,67 +62760,89 @@ function (_BasePlugin) {
 
   }, {
     key: "calculateAllRowsHeight",
-    value: function calculateAllRowsHeight() {
-      var _this4 = this;
+    value: function () {
+      var _calculateAllRowsHeight = _asyncToGenerator(function* () {
+        var _Handsontable,
+            _this4 = this;
 
-      var colRange = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {
-        from: 0,
-        to: this.hot.countCols() - 1
-      };
-      var current = 0;
-      var length = this.hot.countRows() - 1;
-      var timer = null;
-      this.inProgress = true;
+        var colRange = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {
+          from: 0,
+          to: this.hot.countCols() - 1
+        };
+        if ((_Handsontable = Handsontable) !== null && _Handsontable !== void 0 && _Handsontable.debugLevel) console.warn("%c Running calculateAllRowsHeight", "color:aqua", this, arguments);
+        var current = 0;
+        var length = this.hot.countRows() - 1;
+        var timer = null;
+        this.inProgress = true;
+        if (typeof this.hot.onCalculateAllRowsHeightStart === 'function') this.hot.onCalculateAllRowsHeightStart.call(this, colRange);
 
-      var loop = function loop() {
-        // When hot was destroyed after calculating finished cancel frame
-        if (!_this4.hot) {
-          (0, _feature.cancelAnimationFrame)(timer);
-          _this4.inProgress = false;
-          return;
-        }
+        if (typeof this.hot.loadRowHeightsCache === 'function') {
+          if (yield this.hot.loadRowHeightsCache.call(this, colRange)) {
+            yield this.hot.view.wt.wtOverlays.adjustElementsSize(true); // tmp
 
-        _this4.calculateRowsHeight({
-          from: current,
-          to: Math.min(current + AutoRowSize.CALCULATION_STEP, length)
-        }, colRange);
-
-        current = current + AutoRowSize.CALCULATION_STEP + 1;
-
-        if (current < length) {
-          timer = (0, _feature.requestAnimationFrame)(loop);
-        } else {
-          (0, _feature.cancelAnimationFrame)(timer);
-          _this4.inProgress = false; // @TODO Should call once per render cycle, currently fired separately in different plugins
-
-          _this4.hot.view.wt.wtOverlays.adjustElementsSize(true); // tmp
-
-
-          if (_this4.hot.view.wt.wtOverlays.leftOverlay.needFullRender) {
-            _this4.hot.view.wt.wtOverlays.leftOverlay.clone.draw();
+            if (typeof this.hot.onCalculateAllRowsHeightEnd === 'function') this.hot.onCalculateAllRowsHeightEnd.call(this);
+            return;
           }
         }
-      };
 
-      var syncLimit = this.getSyncCalculationLimit(); // sync
+        var loop = function loop() {
+          // When hot was destroyed after calculating finished cancel frame
+          if (!_this4.hot) {
+            (0, _feature.cancelAnimationFrame)(timer);
+            _this4.inProgress = false;
+            return;
+          }
 
-      if (this.firstCalculation && syncLimit >= 0) {
-        this.calculateRowsHeight({
-          from: 0,
-          to: syncLimit
-        }, colRange);
-        this.firstCalculation = false;
-        current = syncLimit + 1;
-      } // async
+          _this4.calculateRowsHeight({
+            from: current,
+            to: Math.min(current + AutoRowSize.CALCULATION_STEP, length)
+          }, colRange);
+
+          current = current + AutoRowSize.CALCULATION_STEP + 1;
+
+          if (current < length) {
+            timer = (0, _feature.requestAnimationFrame)(loop);
+          } else {
+            (0, _feature.cancelAnimationFrame)(timer);
+            _this4.inProgress = false; // @TODO Should call once per render cycle, currently fired separately in different plugins
+
+            _this4.hot.view.wt.wtOverlays.adjustElementsSize(true);
+
+            if (typeof _this4.hot.onCalculateAllRowsHeightEnd === 'function') _this4.hot.onCalculateAllRowsHeightEnd.call(_this4, colRange); // tmp
+
+            if (_this4.hot.view.wt.wtOverlays.leftOverlay.needFullRender) {
+              _this4.hot.view.wt.wtOverlays.leftOverlay.clone.draw();
+            }
+          }
+        };
+
+        var syncLimit = this.getSyncCalculationLimit(); // sync
+
+        if (this.firstCalculation && syncLimit >= 0) {
+          this.calculateRowsHeight({
+            from: 0,
+            to: syncLimit
+          }, colRange);
+          this.firstCalculation = false;
+          current = syncLimit + 1;
+        } // async
 
 
-      if (current < length) {
-        loop();
-      } else {
-        this.inProgress = false;
-        this.hot.view.wt.wtOverlays.adjustElementsSize(false);
+        if (current < length) {
+          loop();
+        } else {
+          this.inProgress = false;
+          this.hot.view.wt.wtOverlays.adjustElementsSize(false);
+          if (typeof this.hot.onCalculateAllRowsHeightEnd === 'function') this.hot.onCalculateAllRowsHeightEnd.call(this, colRange);
+        }
+      });
+
+      function calculateAllRowsHeight() {
+        return _calculateAllRowsHeight.apply(this, arguments);
       }
-    }
+
+      return calculateAllRowsHeight;
+    }()
     /**
      * Sets the sampling options.
      *
@@ -62839,7 +62937,7 @@ function (_BasePlugin) {
     /**
      * Get the first visible row.
      *
-     * @returns {Number|null} Returns row index, -1 if table is not rendered or null if there are no rows to base the the calculations on.
+     * @returns {Number} Returns row index, -1 if table is not rendered or if there are no rows to base the the calculations on.
      */
 
   }, {
@@ -62937,7 +63035,7 @@ function (_BasePlugin) {
       var firstVisibleRow = this.getFirstVisibleRow();
       var lastVisibleRow = this.getLastVisibleRow();
 
-      if (firstVisibleRow === null || lastVisibleRow === null) {
+      if (firstVisibleRow === -1 || lastVisibleRow === -1) {
         return;
       }
 
@@ -63479,6 +63577,7 @@ function (_BasePlugin) {
     /**
      * @description
      * Warn: Useful mainly for providing server side sort implementation (see in the example below). It doesn't sort the data set. It just sets sort configuration for all sorted columns.
+     * Note: Please keep in mind that this method doesn't re-render the table.
      *
      * @example
      * ```js
@@ -63489,7 +63588,7 @@ function (_BasePlugin) {
      *
      *   // const newData = ... // Calculated data set, ie. from an AJAX call.
      *
-     *   // this.loadData(newData); // Load new data set.
+     *   this.loadData(newData); // Load new data set and re-render the table.
      *
      *   return false; // The blockade for the default sort action.
      * }```
@@ -66688,7 +66787,7 @@ _pluginHooks.default.getSingleton().register('afterContextMenuExecute');
 /**
  * @description
  * This plugin creates the Handsontable Context Menu. It allows to create a new row or column at any place in the
- * grid among [other features](http://docs.handsontable.com/demo-context-menu.html).
+ * grid among [other features](https://handsontable.com/docs/demo-context-menu.html).
  * Possible values:
  * * `true` (to enable default options),
  * * `false` (to disable completely)
@@ -66709,7 +66808,7 @@ _pluginHooks.default.getSingleton().register('afterContextMenuExecute');
  * * `'commentsAddEdit'` (with {@link Options#comments} turned on)
  * * `'commentsRemove'` (with {@link Options#comments} turned on)
  *
- * See [the context menu demo](http://docs.handsontable.com/demo-context-menu.html) for examples.
+ * See [the context menu demo](https://handsontable.com/docs/demo-context-menu.html) for examples.
  *
  * @example
  * ```js
@@ -66807,77 +66906,39 @@ function (_BasePlugin) {
         return;
       }
 
-      this.itemsFactory = new _itemsFactory.default(this.hot, ContextMenu.DEFAULT_ITEMS);
       var settings = this.hot.getSettings().contextMenu;
-      var predefinedItems = {
-        items: this.itemsFactory.getItems(settings)
-      };
 
       if (typeof settings.callback === 'function') {
         this.commandExecutor.setCommonCallback(settings.callback);
       }
 
-      _get(_getPrototypeOf(ContextMenu.prototype), "enablePlugin", this).call(this);
-
-      var delayedInitialization = function delayedInitialization() {
-        if (!_this2.hot) {
-          return;
-        }
-
-        _this2.hot.runHooks('afterContextMenuDefaultOptions', predefinedItems);
-
-        _this2.itemsFactory.setPredefinedItems(predefinedItems.items);
-
-        var menuItems = _this2.itemsFactory.getItems(settings);
-
-        _this2.menu = new _menu.default(_this2.hot, {
-          className: 'htContextMenu',
-          keepInViewport: true
-        });
-
-        _this2.hot.runHooks('beforeContextMenuSetItems', menuItems);
-
-        _this2.menu.setMenuItems(menuItems);
-
-        _this2.menu.addLocalHook('beforeOpen', function () {
-          return _this2.onMenuBeforeOpen();
-        });
-
-        _this2.menu.addLocalHook('afterOpen', function () {
-          return _this2.onMenuAfterOpen();
-        });
-
-        _this2.menu.addLocalHook('afterClose', function () {
-          return _this2.onMenuAfterClose();
-        });
-
-        _this2.menu.addLocalHook('executeCommand', function () {
-          var _this2$executeCommand;
-
-          for (var _len = arguments.length, params = new Array(_len), _key = 0; _key < _len; _key++) {
-            params[_key] = arguments[_key];
-          }
-
-          return (_this2$executeCommand = _this2.executeCommand).call.apply(_this2$executeCommand, [_this2].concat(params));
-        });
-
-        _this2.addHook('afterOnCellContextMenu', function (event) {
-          return _this2.onAfterOnCellContextMenu(event);
-        }); // Register all commands. Predefined and added by user or by plugins
-
-
-        (0, _array.arrayEach)(menuItems, function (command) {
-          return _this2.commandExecutor.registerCommand(command.key, command);
-        });
-      };
-
-      this.callOnPluginsReady(function () {
-        if (_this2.isPluginsReady) {
-          setTimeout(delayedInitialization, 0);
-        } else {
-          delayedInitialization();
-        }
+      this.menu = new _menu.default(this.hot, {
+        className: 'htContextMenu',
+        keepInViewport: true
       });
+      this.menu.addLocalHook('beforeOpen', function () {
+        return _this2.onMenuBeforeOpen();
+      });
+      this.menu.addLocalHook('afterOpen', function () {
+        return _this2.onMenuAfterOpen();
+      });
+      this.menu.addLocalHook('afterClose', function () {
+        return _this2.onMenuAfterClose();
+      });
+      this.menu.addLocalHook('executeCommand', function () {
+        var _this2$executeCommand;
+
+        for (var _len = arguments.length, params = new Array(_len), _key = 0; _key < _len; _key++) {
+          params[_key] = arguments[_key];
+        }
+
+        return (_this2$executeCommand = _this2.executeCommand).call.apply(_this2$executeCommand, [_this2].concat(params));
+      });
+      this.addHook('afterOnCellContextMenu', function (event) {
+        return _this2.onAfterOnCellContextMenu(event);
+      });
+
+      _get(_getPrototypeOf(ContextMenu.prototype), "enablePlugin", this).call(this);
     }
     /**
      * Updates the plugin state. This method is executed when {@link Core#updateSettings} is invoked.
@@ -66924,10 +66985,11 @@ function (_BasePlugin) {
         return;
       }
 
+      this.prepareMenuItems();
       this.menu.open();
       this.menu.setPosition({
-        top: parseInt((0, _event.pageY)(event), 10) - (0, _element.getWindowScrollTop)(),
-        left: parseInt((0, _event.pageX)(event), 10) - (0, _element.getWindowScrollLeft)()
+        top: parseInt((0, _event.pageY)(event), 10) - (0, _element.getWindowScrollTop)(this.hot.rootWindow),
+        left: parseInt((0, _event.pageX)(event), 10) - (0, _element.getWindowScrollLeft)(this.hot.rootWindow)
       }); // ContextMenu is not detected HotTableEnv correctly because is injected outside hot-table
 
       this.menu.hotMenu.isHotTableEnv = this.hot.isHotTableEnv; // Handsontable.eventManager.isHotTableEnv = this.hot.isHotTableEnv;
@@ -66944,6 +67006,7 @@ function (_BasePlugin) {
       }
 
       this.menu.close();
+      this.itemsFactory = null;
     }
     /**
      * Execute context menu command.
@@ -66977,11 +67040,43 @@ function (_BasePlugin) {
     value: function executeCommand(commandName) {
       var _this$commandExecutor;
 
+      if (this.itemsFactory === null) {
+        this.prepareMenuItems();
+      }
+
       for (var _len2 = arguments.length, params = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
         params[_key2 - 1] = arguments[_key2];
       }
 
       (_this$commandExecutor = this.commandExecutor).execute.apply(_this$commandExecutor, [commandName].concat(params));
+    }
+    /**
+     * Prepares available contextMenu's items list and registers them in commandExecutor.
+     *
+     * @private
+     * @fires Hooks#afterContextMenuDefaultOptions
+     * @fires Hooks#beforeContextMenuSetItems
+     */
+
+  }, {
+    key: "prepareMenuItems",
+    value: function prepareMenuItems() {
+      var _this3 = this;
+
+      this.itemsFactory = new _itemsFactory.default(this.hot, ContextMenu.DEFAULT_ITEMS);
+      var settings = this.hot.getSettings().contextMenu;
+      var predefinedItems = {
+        items: this.itemsFactory.getItems(settings)
+      };
+      this.hot.runHooks('afterContextMenuDefaultOptions', predefinedItems);
+      this.itemsFactory.setPredefinedItems(predefinedItems.items);
+      var menuItems = this.itemsFactory.getItems(settings);
+      this.hot.runHooks('beforeContextMenuSetItems', menuItems);
+      this.menu.setMenuItems(menuItems); // Register all commands. Predefined and added by user or by plugins
+
+      (0, _array.arrayEach)(menuItems, function (command) {
+        return _this3.commandExecutor.registerCommand(command.key, command);
+      });
     }
     /**
      * On contextmenu listener.
@@ -72802,8 +72897,10 @@ function (_BasePlugin) {
         guidelineLeft = 1;
       } else if (scrollableElement.scrollX !== void 0 && priv.coordsColumn < priv.fixedColumns) {
         guidelineLeft -= priv.rootElementOffset <= scrollableElement.scrollX ? priv.rootElementOffset : 0;
-      }
+      } // dreamsavior patch, add Left ofset to the guideline
 
+
+      guidelineLeft += this.hot.view.THEAD.querySelector('tr > th').offsetWidth;
       this.backlight.setPosition(null, backlightLeft);
       this.guideline.setPosition(null, guidelineLeft);
     }

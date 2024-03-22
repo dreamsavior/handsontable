@@ -131,6 +131,7 @@ class TopOverlay extends Overlay {
    * @param {Boolean} [force=false]
    */
   adjustElementsSize(force = false) {
+    if (this.instance.ignoreAdjustElementSize) return;
     this.updateTrimmingContainer();
 
     if (this.needFullRender || force) {

@@ -197,12 +197,22 @@ class AutoRowSize extends BasePlugin {
    *
    * @param {Object|Number} rowRange Row index or an object with `from` and `to` properties which define row range.
    */
-  calculateAllRowsHeight(colRange = { from: 0, to: this.hot.countCols() - 1 }) {
+  async calculateAllRowsHeight(colRange = { from: 0, to: this.hot.countCols() - 1 }) {
+    if (Handsontable?.debugLevel) console.warn("%c Running calculateAllRowsHeight", "color:aqua", this, arguments);
+
     let current = 0;
     const length = this.hot.countRows() - 1;
     let timer = null;
 
     this.inProgress = true;
+    if (typeof this.hot.onCalculateAllRowsHeightStart === 'function') this.hot.onCalculateAllRowsHeightStart.call(this, colRange);
+    if (typeof this.hot.loadRowHeightsCache === 'function') {
+      if (await this.hot.loadRowHeightsCache.call(this, colRange)) {
+        await this.hot.view.wt.wtOverlays.adjustElementsSize(true); // tmp
+        if (typeof this.hot.onCalculateAllRowsHeightEnd === 'function') this.hot.onCalculateAllRowsHeightEnd.call(this);
+        return;
+      }
+    }
 
     const loop = () => {
       // When hot was destroyed after calculating finished cancel frame
@@ -223,6 +233,8 @@ class AutoRowSize extends BasePlugin {
 
         // @TODO Should call once per render cycle, currently fired separately in different plugins
         this.hot.view.wt.wtOverlays.adjustElementsSize(true);
+        if (typeof this.hot.onCalculateAllRowsHeightEnd === 'function') this.hot.onCalculateAllRowsHeightEnd.call(this, colRange);
+
         // tmp
         if (this.hot.view.wt.wtOverlays.leftOverlay.needFullRender) {
           this.hot.view.wt.wtOverlays.leftOverlay.clone.draw();
@@ -244,6 +256,7 @@ class AutoRowSize extends BasePlugin {
     } else {
       this.inProgress = false;
       this.hot.view.wt.wtOverlays.adjustElementsSize(false);
+      if (typeof this.hot.onCalculateAllRowsHeightEnd === 'function') this.hot.onCalculateAllRowsHeightEnd.call(this, colRange);
     }
   }
 
@@ -330,7 +343,7 @@ class AutoRowSize extends BasePlugin {
   /**
    * Get the first visible row.
    *
-   * @returns {Number|null} Returns row index, -1 if table is not rendered or null if there are no rows to base the the calculations on.
+   * @returns {Number} Returns row index, -1 if table is not rendered or if there are no rows to base the the calculations on.
    */
   getFirstVisibleRow() {
     const wot = this.hot.view.wt;
@@ -404,7 +417,7 @@ class AutoRowSize extends BasePlugin {
     const firstVisibleRow = this.getFirstVisibleRow();
     const lastVisibleRow = this.getLastVisibleRow();
 
-    if (firstVisibleRow === null || lastVisibleRow === null) {
+    if (firstVisibleRow === -1 || lastVisibleRow === -1) {
       return;
     }
 

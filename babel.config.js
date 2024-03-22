@@ -63,18 +63,23 @@ module.exports = {
   ],
   plugins: [
     ['@babel/plugin-proposal-object-rest-spread', {useBuiltIns: true}],
+    ['@babel/plugin-proposal-optional-chaining'],
     ['transform-inline-environment-variables']
   ],
   env: {
     commonjs: {
       plugins: [
-        ['@babel/plugin-transform-modules-commonjs', {loose: true}]
+        ['@babel/plugin-transform-modules-commonjs', {loose: true}],
+        ['@babel/plugin-proposal-optional-chaining'],
+
       ]
     },
     commonjs_dist: {
       plugins: [
         ['@babel/plugin-transform-modules-commonjs', {loose: true}],
-        ['babel-plugin-transform-require-ignore', {extensions: ['.css']}]
+        ['babel-plugin-transform-require-ignore', {extensions: ['.css']}],
+        ['@babel/plugin-proposal-optional-chaining'],
+
       ]
     },
     commonjs_e2e: {
@@ -142,6 +147,7 @@ module.exports = {
       ],
       plugins: [
         ['@babel/plugin-transform-modules-commonjs', {loose: true}],
+        ['@babel/plugin-transform-logical-assignment-operators'],
         [
           'babel-plugin-forbidden-imports', {
             allowedModules: [
@@ -162,7 +168,9 @@ module.exports = {
     },
     es: {
       plugins: [
-        ['babel-plugin-transform-require-ignore', {extensions: ['.css']}]
+        ['babel-plugin-transform-require-ignore', {extensions: ['.css']}],
+        ['@babel/plugin-proposal-optional-chaining'],
+
       ]
     }
   },

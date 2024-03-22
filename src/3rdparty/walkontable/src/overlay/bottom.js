@@ -139,6 +139,8 @@ class BottomOverlay extends Overlay {
    * @param {Boolean} [force=false]
    */
   adjustElementsSize(force = false) {
+    if (Handsontable?.debugLevel) console.warn("%c Running adjustElementsSize - BottomOverlay", "color:aqua", this, arguments);
+    if (this.instance.ignoreAdjustElementSize) return;
     this.updateTrimmingContainer();
 
     if (this.needFullRender || force) {

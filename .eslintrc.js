@@ -69,8 +69,10 @@ module.exports = {
     ],
     "no-void": "off",
     "padded-blocks": "off",
-    "quotes": [ "error", "single" ],
-    "space-before-function-paren": ["error", "never"],
+    "quotes": "off",
+    "space-before-function-paren": "off",
+    "prefer-rest-params": "off",
+    "no-var": "false",
   },
   "overrides": [
     {
